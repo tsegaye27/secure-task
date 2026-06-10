@@ -1,5 +1,14 @@
 basePath: /
 definitions:
+  models.CreateTaskRequest:
+    properties:
+      description:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+    type: object
   models.Task:
     properties:
       created_at:
@@ -17,11 +26,18 @@ definitions:
       user_id:
         type: string
     type: object
+  models.UpdateTaskRequest:
+    properties:
+      description:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+    type: object
   models.User:
     properties:
       email:
-        type: string
-      id:
         type: string
       password:
         type: string
@@ -44,7 +60,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Authenticate user and return JWT token
+      description: Authenticate user and return JWT token and userID
       parameters:
       - description: User login credentials
         in: body
@@ -131,7 +147,7 @@ paths:
         name: task
         required: true
         schema:
-          $ref: '#/definitions/models.Task'
+          $ref: '#/definitions/models.CreateTaskRequest'
       produces:
       - application/json
       responses:
@@ -139,8 +155,16 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/models.Task'
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
         "401":
           description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Error creating task
           schema:
             type: string
       security:
@@ -212,7 +236,7 @@ paths:
         name: task
         required: true
         schema:
-          $ref: '#/definitions/models.Task'
+          $ref: '#/definitions/models.UpdateTaskRequest'
       produces:
       - application/json
       responses:
@@ -222,8 +246,16 @@ paths:
             additionalProperties:
               type: string
             type: object
+        "400":
+          description: Invalid request payload
+          schema:
+            type: string
         "401":
           description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Error updating task or task not found
           schema:
             type: string
       security:

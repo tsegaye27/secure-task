@@ -1,3 +1,4 @@
+// Package database
 package database
 
 import (
@@ -18,7 +19,7 @@ func InitDB() {
 	}
 
 	var err error
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		DB, err = sql.Open("postgres", connStr)
 		if err == nil {
 			err = DB.Ping()

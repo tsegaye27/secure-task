@@ -10,7 +10,7 @@ import (
 
 // LoginHandler ...
 // @Summary Login user
-// @Description Authenticate user and return JWT token
+// @Description Authenticate user and return JWT token and userID
 // @Tags auth
 // @Accept json
 // @Produce json
@@ -44,5 +44,5 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]string{"token": token})
+	json.NewEncoder(w).Encode(map[string]string{"token": token, "user_id": userID})
 }

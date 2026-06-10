@@ -38,12 +38,13 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = database.DB.Exec("INSERT INTO users (email, password) VALUES ($1, $2)", user.Email, hashedPassword)
+	var userID string
+	err = database.DB.QueryRow("INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id", user.Email, hashedPassword).Scan(&userID)
 	if err != nil {
 		http.Error(w, "User already exists or database error", http.StatusConflict)
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]string{"message": "User registered successfully"})
+	json.NewEncoder(w).Encode(map[string]string{"message": "User registered successfully", "user_id": userID})
 }

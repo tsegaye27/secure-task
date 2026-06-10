@@ -26,7 +26,7 @@ const docTemplate = `{
     "paths": {
         "/auth/login": {
             "post": {
-                "description": "Authenticate user and return JWT token",
+                "description": "Authenticate user and return JWT token and userID",
                 "consumes": [
                     "application/json"
                 ],
@@ -173,7 +173,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Task"
+                            "$ref": "#/definitions/models.CreateTaskRequest"
                         }
                     }
                 ],
@@ -184,8 +184,20 @@ const docTemplate = `{
                             "$ref": "#/definitions/models.Task"
                         }
                     },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Error creating task",
                         "schema": {
                             "type": "string"
                         }
@@ -269,7 +281,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Task"
+                            "$ref": "#/definitions/models.UpdateTaskRequest"
                         }
                     }
                 ],
@@ -283,8 +295,20 @@ const docTemplate = `{
                             }
                         }
                     },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Error updating task or task not found",
                         "schema": {
                             "type": "string"
                         }
@@ -326,6 +350,20 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.CreateTaskRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Task": {
             "type": "object",
             "properties": {
@@ -352,13 +390,24 @@ const docTemplate = `{
                 }
             }
         },
+        "models.UpdateTaskRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "models.User": {
             "type": "object",
             "properties": {
                 "email": {
-                    "type": "string"
-                },
-                "id": {
                     "type": "string"
                 },
                 "password": {

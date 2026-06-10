@@ -32,7 +32,7 @@ func GetAllTasksHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var tasks []models.Task
+	tasks := []models.Task{}
 	for rows.Next() {
 		var task models.Task
 		if err := rows.Scan(&task.ID, &task.Title, &task.Description, &task.Status, &task.UserID, &task.CreatedAt, &task.UpdatedAt); err != nil {

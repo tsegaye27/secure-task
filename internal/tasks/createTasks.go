@@ -7,8 +7,6 @@ import (
 	"task/internal/database"
 	"task/internal/middleware"
 	"task/internal/models"
-
-	"github.com/google/uuid"
 )
 
 // CreateTaskHandler ...
@@ -18,9 +16,11 @@ import (
 // @Security BearerAuth
 // @Accept json
 // @Produce json
-// @Param task body models.Task true "Task details"
+// @Param task body models.CreateTaskRequest true "Task details"
 // @Success 201 {object} models.Task
 // @Failure 401 {string} string "Unauthorized"
+// @Failure 400 {string} string "Invalid request payload"
+// @Failure 500 {string} string "Error creating task"
 // @Router /tasks [post]
 func CreateTaskHandler(w http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(middleware.UserIDKey).(string)
@@ -29,22 +29,22 @@ func CreateTaskHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var task models.Task
-	if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
+	var req models.CreateTaskRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
 
-	if task.Title == "" {
+	if req.Title == "" {
 		http.Error(w, "Title is required", http.StatusBadRequest)
 		return
 	}
 
-	task.ID = uuid.New().String()
-	task.UserID = userID
-
-	_, err := database.DB.Exec("INSERT INTO tasks (id, title, description, user_id) VALUES ($1, $2, $3, $4)",
-		task.ID, task.Title, task.Description, task.UserID)
+	var task models.Task
+	err := database.DB.QueryRow(
+		"INSERT INTO tasks (title, description, status, user_id) VALUES ($1, $2, $3, $4) RETURNING id, title, description, status, created_at, updated_at",
+		req.Title, req.Description, req.Status, userID).Scan(
+		&task.ID, &task.Title, &task.Description, &task.Status, &task.CreatedAt, &task.UpdatedAt)
 	if err != nil {
 		http.Error(w, "Error creating task", http.StatusInternalServerError)
 		return

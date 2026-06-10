@@ -18,9 +18,11 @@ import (
 // @Accept json
 // @Produce json
 // @Param id path string true "Task ID"
-// @Param task body models.Task true "Updated task details"
+// @Param task body models.UpdateTaskRequest true "Updated task details"
 // @Success 200 {object} map[string]string
 // @Failure 401 {string} string "Unauthorized"
+// @Failure 400 {string} string "Invalid request payload"
+// @Failure 500 {string} string "Error updating task or task not found"
 // @Router /tasks/{id} [put]
 func UpdateTaskHandler(w http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(middleware.UserIDKey).(string)
@@ -35,16 +37,22 @@ func UpdateTaskHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var updateData models.Task
-	if err := json.NewDecoder(r.Body).Decode(&updateData); err != nil {
+	var req models.UpdateTaskRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
 
-	_, err := database.DB.Exec("UPDATE tasks SET title = $1, description = $2, status = $3, updated_at = $4 WHERE id = $5 AND user_id = $6",
-		updateData.Title, updateData.Description, updateData.Status, time.Now(), taskID, userID)
+	result, err := database.DB.Exec("UPDATE tasks SET title = $1, description = $2, status = $3, updated_at = $4 WHERE id = $5 AND user_id = $6",
+		req.Title, req.Description, req.Status, time.Now(), taskID, userID)
 	if err != nil {
-		http.Error(w, "Error updating task or task not found", http.StatusInternalServerError)
+		http.Error(w, "Error updating task", http.StatusInternalServerError)
+		return
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		http.Error(w, "Task not found", http.StatusNotFound)
 		return
 	}
 
